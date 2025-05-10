@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Painel de Administração</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+    #adminPanel {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ccc;
+    }
+    h2 {
+      text-align: center;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background: #6c63ff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #5a52e0;
+    }
+    .message {
+      padding: 10px;
+      background: #f1f1f1;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+    }
+  </style>
+</head>
+<body>
+
+<div id="adminPanel">
+  <h2>Painel de Administração</h2>
+  
+  <!-- Formulário para cadastrar usuário -->
+  <h3>Cadastrar Novo Usuário</h3>
+  <input id="nome" type="text" placeholder="Nome" />
+  <input id="usuario" type="text" placeholder="Usuário" />
+  <input id="senha" type="password" placeholder="Senha" />
+  <button id="cadastrar">Cadastrar</button>
+
+  <!-- Formulário para suspender usuário -->
+  <h3>Suspender Usuário</h3>
+  <input id="usuarioSuspender" type="text" placeholder="Usuário para suspender" />
+  <button id="suspender">Suspender</button>
+
+  <!-- Formulário para excluir usuário -->
+  <h3>Excluir Usuário</h3>
+  <input id="usuarioExcluir" type="text" placeholder="Usuário para excluir" />
+  <button id="excluir">Excluir</button>
+
+  <div id="message" class="message"></div>
+</div>
+
+<script type="module">
+  // Importando as funções necessárias do Firebase
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
+  import { getDatabase, ref, set, update, remove } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
+
+  // Configuração do seu Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyCXmACnJ4CqwXST5q_HmLZrAqctE_mgk2I",  // Sua chave da API
+    authDomain: "chat-cbb85.firebaseapp.com",         // Domínio de autenticação
+    databaseURL: "https://chat-cbb85-default-rtdb.firebaseio.com",  // URL do banco de dados
+    projectId: "chat-cbb85",                         // ID do projeto
+    storageBucket: "chat-cbb85.appspot.com",          // Bucket de armazenamento
+    messagingSenderId: "189966571721",               // ID do remetente de mensagens
+    appId: "1:189966571721:web:d4a52ec8255969e3d25518"  // ID do app
+  };
+
+  // Inicializando o Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // Função para cadastrar usuário
+  document.getElementById("cadastrar").onclick = function() {
+    const nome = document.getElementById("nome").value.trim();
+    const usuario = document.getElementById("usuario").value.trim();
+    const senha = document.getElementById("senha").value.trim();
+
+    if (nome && usuario && senha) {
+      set(ref(db, 'usuarios/' + usuario), {
+        nome: nome,
+        senha: senha,
+        status: 'ativo'
+      }).then(() => {
+        showMessage('Usuário cadastrado com sucesso!', 'success');
+      }).catch(() => {
+        showMessage('Erro ao cadastrar usuário.', 'error');
+      });
+    } else {
+      showMessage('Preencha todos os campos!', 'error');
+    }
+  };
+
+  // Função para suspender usuário
+  document.getElementById("suspender").onclick = function() {
+    const usuarioSuspender = document.getElementById("usuarioSuspender").value.trim();
+
+    if (usuarioSuspender) {
+      update(ref(db, 'usuarios/' + usuarioSuspender), {
+        status: 'suspenso'
+      }).then(() => {
+        showMessage('Usuário suspenso com sucesso!', 'success');
+      }).catch(() => {
+        showMessage('Erro ao suspender usuário.', 'error');
+      });
+    } else {
+      showMessage('Digite o nome do usuário para suspender.', 'error');
+    }
+  };
+
+  // Função para excluir usuário
+  document.getElementById("excluir").onclick = function() {
+    const usuarioExcluir = document.getElementById("usuarioExcluir").value.trim();
+
+    if (usuarioExcluir) {
+      remove(ref(db, 'usuarios/' + usuarioExcluir)).then(() => {
+        showMessage('Usuário excluído com sucesso!', 'success');
+      }).catch(() => {
+        showMessage('Erro ao excluir usuário.', 'error');
+      });
+    } else {
+      showMessage('Digite o nome do usuário para excluir.', 'error');
+    }
+  };
+
+  // Função para exibir mensagens
+  function showMessage(message, type) {
+    const messageDiv = document.getElementById("message");
+    messageDiv.textContent = message;
+    messageDiv.className = 'message ' + (type === 'error' ? 'error' : 'success');
+  }
+</script>
+
+</body>
+</html>
